@@ -1,10 +1,13 @@
-package Alumno;
+package com.ipartek.formacion.pojo;
 
 public class Alumno {
 	
 	private String nombre,	rol, dni, email;
 	private int id;
 	
+	/**
+	 * Se inicializan las variables para evitar NullPointerException
+	 */
 	public Alumno() {
 		super();
 		this.nombre = "";
@@ -66,6 +69,4 @@ public class Alumno {
 	public String toString() {
 		return "Alumno [nombre=" + nombre + ", rol=" + rol + ", dni=" + dni + ", email=" + email + "]";
 	}
-	
-	
 }

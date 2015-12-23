@@ -5,4 +5,4 @@
  * @author Curso
  *
  */
-package modelo;
+package com.ipartek.formacion.pojo;

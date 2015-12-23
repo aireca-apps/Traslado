@@ -1,4 +1,4 @@
-package modelo;
+package com.ipartek.formacion.modelo;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
