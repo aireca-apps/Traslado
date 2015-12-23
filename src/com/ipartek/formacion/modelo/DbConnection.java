@@ -6,7 +6,7 @@ import java.sql.Connection;
 
 /**
  * Clase que permite conectar con la base de datos
- * @author chenao
+ * @author Aitor
  *
  */
 public class DbConnection {

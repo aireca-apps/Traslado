@@ -15,15 +15,16 @@ import com.ipartek.formacion.modelo.*;
 import com.ipartek.formacion.pojo.Alumno;
 
 public class Traslado {
-
-	private static File archivo, ruta, informe;
-	private static final String RUTA = "C:\\desarrollo\\personas", ARCHIVO = "\\personas.txt",
+	
+	private static final String RUTA = "C:\\desarrollo\\personas", 
+			ARCHIVO = "\\personas.txt",
 			INFORME = "\\informe.txt";
+	private static File archivo, ruta, informe;
 	private static FileReader frFichero;
 	private static BufferedReader brFichero;
 	private static DbConnection conn;
 	private static PreparedStatement pst;
-	private static int errores, insertados;
+	private static int errores, insertados, i = -1;
 	private static FileWriter fwFichero;
 	private static PrintWriter pwFichero;
 	private static ArrayList<String> errorAlumnos = new ArrayList<String>();
@@ -32,7 +33,7 @@ public class Traslado {
 		try {
 			iniciarConexion();
 			leer();
-			escribir();
+			crearInforme();
 			desconectar();
 		} catch (FileNotFoundException e) {
 			System.err.println("No se ha encontrado el archivo de lectura " + archivo);
@@ -60,29 +61,35 @@ public class Traslado {
 	 * @throws IOException en caso de haber algún problema con el archivo de lectura.
 	 */
 	private static void leer() throws IOException {
+		//Se crean los Files que apuntan al archivo
 		ruta = new File(RUTA);
 		archivo = new File(ruta + ARCHIVO);
-		String linea = null;
+		//Se crea el flujo de datos de lectura
 		frFichero = new FileReader(archivo);
 		brFichero = new BufferedReader(frFichero);
-		int i = -1;
+		
+		String linea = null;		
+		
+		//bucle de lectura
 		while ((linea = brFichero.readLine()) != null) {
+			try {
 			String[] sAlumno = linea.split(",");
-			if (sAlumno.length == 7) {
-				try {
+			if (sAlumno.length == 7) {				
 					insert(new Alumno(sAlumno[0] + " " + sAlumno[1] + " " + sAlumno[2], sAlumno[6], sAlumno[5],
 							sAlumno[4]));
-					insertados++;
-				} catch (Exception e) {
-					errores++;
-					errorAlumnos.add(linea);
-				}
+					insertados++;				
 			} else {
 				errores++;
 				errorAlumnos.add(linea);
+				errorAlumnos.add("\tError: Faltan apartados");
 			}
-			if (++i % 100 == 0)
-				System.out.println("");
+			} catch (Exception e) {
+				errores++;
+				errorAlumnos.add(linea);
+				errorAlumnos.add("\tError: " + e.getMessage());
+			}
+			if (++i % 100 == 0 && i != 0)
+				System.out.println(" " + i);
 			System.out.print(".");
 		}
 	}
@@ -93,6 +100,10 @@ public class Traslado {
 	 * @throws Exception
 	 */
 	public static void insert(Alumno persistable) throws Exception {
+		if (persistable.getDni().length() != 9)
+			throw new Exception("DNI incorrecto");
+		if (!persistable.getEmail().contains("@") || persistable.getEmail().contains(" "))
+			throw new Exception("Email incorrecto");
 		pst.setString(1, persistable.getDni());
 		pst.setString(2, null);
 		pst.setDate(3, null);
@@ -107,15 +118,20 @@ public class Traslado {
 	 * Genera el informe
 	 * @throws IOException en caso de haber algún problema con el archivo de escritura.
 	 */
-	private static void escribir() throws IOException {
+	private static void crearInforme() throws IOException {
 		informe = new File(ruta + INFORME);
-		if (!informe.exists())
-			informe.createNewFile();
+		//Si hay un informe previo lo borra y crea uno nuevo
+		if (informe.exists())
+			informe.delete();
+		informe.createNewFile();
+		//Se crea el flujo de escritura
 		fwFichero = new FileWriter(informe);
 		pwFichero = new PrintWriter(fwFichero, true); // Autoflush: true
-		pwFichero
-				.println("Se han insertado " + insertados + " Alumnos, de un total de " + (errores + insertados) + ".");
-		pwFichero.println("\nLos Alumnos no insertados han sido los siguientes:\n");
+		//Se escribe en el informe
+		pwFichero.println("Se han insertado " + insertados + " Alumnos, de un total de " 
+						+ i + ".");
+		pwFichero.println("");
+		pwFichero.println("Los Alumnos no insertados han sido los siguientes:");
 		pwFichero.println("");
 		for (String alumno : errorAlumnos)
 			pwFichero.println(alumno);
