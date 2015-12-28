@@ -113,20 +113,16 @@ public class Traslado {
 	}
 
 	/**
-	 * Genera los alumnos desde los String proporcionados
+	 * Genera el {@code Alumno} desde los {@code String} proporcionados.
 	 * 
-	 * @param {@code nombreApelidos}. Nombre y apellidos del {@code Alumno}.
-	 * @param {@code rol}. Rol del {@code Alumno}.
-	 * @param {@code dni}. DNI del {@code Alumno}. En caso de no corresponderse
-	 *            con un {@code dni}, lanza una excepción.
-	 * @param {@code email}. Email del {@code Alumno}. En caso de no
-	 *            corresponderse con un {@code email}, lanza una excepción.
-	 * @param {@code edadAlumno}. Edad del {@code Alumno}. En caso de no poder
-	 *            pasarlo a {@code int} o ser una edad incorrecta, lanza una
+	 * @param nombreApelidos {@code String}. Nombre y apellidos del {@code Alumno}.
+	 * @param rol  {@code String}. Rol del {@code Alumno}.
+	 * @param dni  {@code String}. DNI del {@code Alumno}. En caso de no corresponderse con un {@code dni}, lanza una excepción.
+	 * @param email  {@code String}. Email del {@code Alumno}. En caso de no corresponderse con un {@code email}, lanza una excepción.
+	 * @param edadAlumno  {@code String}. Edad del {@code Alumno}. En caso de no poder pasarlo a {@code int} o ser una edad incorrecta, lanza una
 	 *            excepción.
-	 * @return {@code Alumno}. Devuelve el {@code Alumno} en caso de que se haya
-	 *         creado
-	 * @throws Exception
+	 * @return Alumno  {@code Alumno}. Devuelve el {@code Alumno} en caso de que se haya creado
+	 * @throws Exception en los casos arriba mencionados
 	 */
 	private static Alumno createAlumno(String nombreApelidos, String rol, String dni, String email, String edadAlumno)
 			throws Exception {
@@ -156,9 +152,8 @@ public class Traslado {
 	/**
 	 * Se inserta el alumno en la base de datos
 	 * 
-	 * @param {@code Alumno}. El {@code Alumno} que se desea insertar en la bbdd
-	 * @throws Exception
-	 *             en caso de que no se haya insertado el dato.
+	 * @param persistable {@code Alumno}. El {@code Alumno} que se desea insertar en la bbdd
+	 * @throws Exception en caso de que no se haya insertado el dato.
 	 */
 	public static void insert(Alumno persistable) throws Exception {
 		pst.setString(1, persistable.getDni());
