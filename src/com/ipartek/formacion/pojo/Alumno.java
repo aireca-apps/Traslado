@@ -1,9 +1,13 @@
 package com.ipartek.formacion.pojo;
 
+import java.sql.Date;
+import java.util.GregorianCalendar;
+
 public class Alumno {
 	
 	private String nombre,	rol, dni, email;
 	private int id;
+	private Date fechaNacimiento;
 	
 	/**
 	 * Se inicializan las variables para evitar NullPointerException
@@ -14,15 +18,18 @@ public class Alumno {
 		this.rol = "";
 		this.dni = "";
 		this.email = "";
+		GregorianCalendar calendar = new GregorianCalendar(1900, 0, 1);
+		this.fechaNacimiento = new Date(calendar.getTimeInMillis());
 	}
 
-	public Alumno(String nombre, String rol, String dni, String email) {
+	public Alumno(String nombre, String rol, String dni, String email, Date fechaNacimiento) {
 		this();
 		this.id = -1;
 		this.nombre = nombre;
 		this.rol = rol;
 		this.dni = dni;
 		this.email = email;
+		this.fechaNacimiento = fechaNacimiento;
 	}
 	
 	public int getId() {
@@ -63,6 +70,14 @@ public class Alumno {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}	
+	
+	public Date getFechaNacimiento() {
+		return fechaNacimiento;
+	}
+
+	public void setFechaNacimiento(Date fechaNacimiento) {
+		this.fechaNacimiento = fechaNacimiento;
 	}
 
 	@Override
