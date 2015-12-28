@@ -2,7 +2,6 @@ package com.ipartek.formacion.traslado;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,13 +13,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.regex.Pattern;
-
-import com.ipartek.formacion.modelo.*;
+import com.ipartek.formacion.modelo.DbConnection;
 import com.ipartek.formacion.pojo.Alumno;
 
 public class Traslado {
 
 	private static final String RUTA = ".\\data", ARCHIVO = "\\personas.txt", INFORME = "\\informe.txt";
+	private static final Pattern EMAIL_EXPRESION = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
+			Pattern.CASE_INSENSITIVE),
+			DNI_EXPRESION = Pattern.compile("^((([A-Z]|[a-z])\\d{8})|(\\d{8}([A-Z]|[a-z])))$");
 	private static File archivo, ruta, informe;
 	private static FileReader frFichero;
 	private static BufferedReader brFichero;
@@ -30,17 +31,18 @@ public class Traslado {
 	private static FileWriter fwFichero;
 	private static PrintWriter pwFichero;
 	private static ArrayList<String> errorAlumnos = new ArrayList<String>();
-	public static final Pattern EMAIL_EXPRESION = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
-			Pattern.CASE_INSENSITIVE),
-			DNI_EXPRESION = Pattern.compile("^((([A-Z]|[a-z])\\d{8})|(\\d{8}([A-Z]|[a-z])))$");
 
 	public static void main(String[] args) {
+		long actual = System.currentTimeMillis();
 		iniciarConexion();
 		leer();
-		crearInforme();
+		// seg. representa el tiempo en segundos que ha tardado la app en leer e insertar los datos
+		int seg = (int) ((System.currentTimeMillis() - actual) / 1000);
+		crearInforme(seg);
 		desconectar();
 		System.out.println("\nSe han insertado " + insertados + " alumnos.\nSe han encontado " + errores
-				+ " alumnos con errores que no han sido insertados." + "\nInforme creado en: " + RUTA + INFORME);
+				+ " alumnos con errores que no han sido insertados.\nTiempo total de ejecución: " + seg + " seg."
+				+ "\nInforme creado en: " + RUTA + INFORME);
 	}
 
 	/**
@@ -62,10 +64,10 @@ public class Traslado {
 	/**
 	 * Lee el archivo personas.txt facilitado, llama al método que inserta los
 	 * datos en la bbdd, <br>
-	 * crea un {@code ArrayList} con las líneas que no se han insertado y contabiliza
-	 * los {@code Alumnos} insertados y los errores. <br>
-	 * En caso de no poder localizar o leer el archivo de lectura, lanza un excepción y finaliza la
-	 * ejecución.
+	 * crea un {@code ArrayList} con las líneas que no se han insertado y
+	 * contabiliza los {@code Alumnos} insertados y los errores. <br>
+	 * En caso de no poder localizar o leer el archivo de lectura, lanza un
+	 * excepción y finaliza la ejecución.
 	 */
 	private static void leer() {
 		try {
@@ -102,12 +104,15 @@ public class Traslado {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * 
-	 * @param linea {@code String} representa un alumno leído del fichero
-	 * @param error {@code String} representa el error por el que no se ha generado el alumno
-	 */	
+	 * @param linea
+	 *            {@code String} representa un alumno leído del fichero
+	 * @param error
+	 *            {@code String} representa el error por el que no se ha
+	 *            generado el alumno
+	 */
 	private static void addError(String linea, String error) {
 		errorAlumnos.add(++errores + ") Alumno: " + linea + "\r\n\t" + error);
 	}
@@ -115,14 +120,24 @@ public class Traslado {
 	/**
 	 * Genera el {@code Alumno} desde los {@code String} proporcionados.
 	 * 
-	 * @param nombreApelidos {@code String}. Nombre y apellidos del {@code Alumno}.
-	 * @param rol  {@code String}. Rol del {@code Alumno}.
-	 * @param dni  {@code String}. DNI del {@code Alumno}. En caso de no corresponderse con un {@code dni}, lanza una excepción.
-	 * @param email  {@code String}. Email del {@code Alumno}. En caso de no corresponderse con un {@code email}, lanza una excepción.
-	 * @param edadAlumno  {@code String}. Edad del {@code Alumno}. En caso de no poder pasarlo a {@code int} o ser una edad incorrecta, lanza una
+	 * @param nombreApelidos
+	 *            {@code String}. Nombre y apellidos del {@code Alumno}.
+	 * @param rol
+	 *            {@code String}. Rol del {@code Alumno}.
+	 * @param dni
+	 *            {@code String}. DNI del {@code Alumno}. En caso de no
+	 *            corresponderse con un {@code dni}, lanza una excepción.
+	 * @param email
+	 *            {@code String}. Email del {@code Alumno}. En caso de no
+	 *            corresponderse con un {@code email}, lanza una excepción.
+	 * @param edadAlumno
+	 *            {@code String}. Edad del {@code Alumno}. En caso de no poder
+	 *            pasarlo a {@code int} o ser una edad incorrecta, lanza una
 	 *            excepción.
-	 * @return Alumno  {@code Alumno}. Devuelve el {@code Alumno} en caso de que se haya creado
-	 * @throws Exception en los casos arriba mencionados
+	 * @return Alumno {@code Alumno}. Devuelve el {@code Alumno} en caso de que
+	 *         se haya creado
+	 * @throws Exception
+	 *             en los casos arriba mencionados
 	 */
 	private static Alumno createAlumno(String nombreApelidos, String rol, String dni, String email, String edadAlumno)
 			throws Exception {
@@ -152,8 +167,11 @@ public class Traslado {
 	/**
 	 * Se inserta el alumno en la base de datos
 	 * 
-	 * @param persistable {@code Alumno}. El {@code Alumno} que se desea insertar en la bbdd
-	 * @throws Exception en caso de que no se haya insertado el dato.
+	 * @param persistable
+	 *            {@code Alumno}. El {@code Alumno} que se desea insertar en la
+	 *            bbdd
+	 * @throws Exception
+	 *             en caso de que no se haya insertado el dato.
 	 */
 	public static void insert(Alumno persistable) throws Exception {
 		pst.setString(1, persistable.getDni());
@@ -171,8 +189,10 @@ public class Traslado {
 	 * En caso de no poder crear el informe, lanza un excepción y finaliza la
 	 * ejecución.
 	 * 
+	 * @param seg
+	 * 
 	 */
-	private static void crearInforme() {
+	private static void crearInforme(int seg) {
 		try {
 			informe = new File(ruta + INFORME);
 			// Si hay un informe previo lo borra y crea uno nuevo
@@ -184,8 +204,8 @@ public class Traslado {
 			pwFichero = new PrintWriter(fwFichero, true); // Autoflush: true
 			// Se escribe en el informe
 			pwFichero.println("\nSe han insertado " + insertados + " alumnos.\nSe han encontado " + errores
-					+ " alumnos con errores que no han sido insertados.\r\n"
-					+ "\r\nLos Alumnos no insertados han sido los siguientes:\r\n");
+					+ " alumnos con errores que no han sido insertados.\r\n" + "Tiempo total de ejecución: " + seg
+					+ " seg.\r\n" + "\r\nLos Alumnos no insertados han sido los siguientes:\r\n");
 			for (String errorAlumno : errorAlumnos)
 				pwFichero.println(errorAlumno);
 		} catch (IOException e) {
